@@ -1,0 +1,531 @@
+﻿// Online C compiler to run C program online
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+//#include <ncurses.h>
+
+void afficheInterface(int life1,int nbTour1,int nbBombe1);
+
+void saisienbTab(int ligne,int cologne);
+
+void createTab(int ligne, int col, int TabA2[ligne][col]);
+
+void createTabC(int ligne, int col, char TabA2[ligne][col]);
+
+void afficheGrille(int ligne, int col, int TabA2[ligne][col],int life1,int nbTour1,int nbBombe1);
+
+void afficheGrilleC(int ligne, int col, char TabA2[ligne][col],int life1,int nbTour1,int nbBombe1);
+
+void genererBombe(int ligne, int colonne, int nbBombe, int TabSYS[ligne][colonne]);
+
+void saisiJ1(int ligne,int cologne,int TabSYS[ligne][cologne],char TabA2[ligne][cologne],int life1,int nbTour1,int nbBombe1,int x,int y);
+
+void caseajda (int ligne,int cologne,int TabSYS[ligne][cologne],char TabA2[ligne][cologne],int life1,int nbTour1,int nbBombe1,int x,int y);
+
+void saisieAlea (int ligne,int cologne,int TabSYS[ligne][cologne],char TabA2[ligne][cologne],int life1,int nbTour1,int nbBombe1,int x,int y, char choixJ2,char choixJ3 );
+
+int main() {
+
+/*
+	initscr(); // Initialise l'environnement ncurses
+	start_color(); // Active la gestion des couleurs
+    
+	// Initialise une paire de couleurs (texte blanc sur fond noir)
+	init_pair(1, COLOR_WHITE, COLOR_GRAY);
+	init_pair(2, COLOR_BLUE, COLOR_GRAY);//1adja
+	init_pair(3, COLOR_GREEN, COLOR_GRAY);//2adja
+	init_pair(4, COLOR_BLACK, COLOR_GRAY);//BOMBE
+	init_pair(5, COLOR_RED, COLOR_GRAY);//3/4adja
+	*/
+
+//On initialise toute les variable utile
+
+	int life1 =0;
+	int nbTour1=0;
+	int nbBombe1 =0;
+	int colone1= 0;
+	int ligne1 = 0;
+	int J1x ;
+	int J1y ;
+	char choixJ1;// i ou p ou s
+	char choixJ2;// m,a,
+	char choixJ3;// d,c,r
+	int niv;
+  
+	//affiche grille + regle
+	afficheInterface(life1,nbTour1,nbBombe1);
+
+	printf("\n\n 1)Tapez votre char : ");
+	scanf("%c",&choixJ1);getchar();
+    
+    	if(choixJ1 != 'i' && choixJ1 != 'p' && choixJ1!='s'){
+        	printf("\n\n 1)Retapez votre char : ");
+        	scanf("%c",&choixJ1);getchar();
+       	 
+    	}
+    
+    	if(choixJ1=='i'){  //taper i pour jouer en version initiale
+    
+    	//Lecture de ficher pour ligne1,colone1 et nbBombe
+	 
+        	printf("\n Niveau de difficulter 1:Facil\t2:Moyen\t 3:Difficile ");
+        	scanf("%d",&niv);
+       	 
+            	if(niv==1){
+               	 
+                	nbBombe1 =5;
+                	colone1= 5;
+                	ligne1 = 5;
+            	}
+           	 
+            	if(niv==2){
+                	nbBombe1 =15;
+                	colone1= 7;
+                	ligne1 = 7;
+            	}
+           	 
+            	if(niv==3){
+                	nbBombe1 =35;
+                	colone1= 10;
+                	ligne1 = 10;
+            	}
+    	}
+    
+    	if(choixJ1=='p'){ // Taper p pour personaliser votre grille
+   	 
+        	printf("\nEntrez le nombre de lignes : ");
+        	scanf("%d", &ligne1);
+        	printf("\nEntrez le nombre de colonnes :");
+        	scanf("%d", &colone1);
+        	printf("\nChoisissez le nombre de Bombe : ");
+        	scanf("%d",&nbBombe1);
+    	}
+    	
+    	if(choixJ1=='s'){
+    	    int ligne, cologne;
+    
+            FILE *fichier = fopen("partie_sauvegardee.txt", "r");
+            
+            if (fichier == NULL) {
+                printf("Erreur lors de l'ouverture du fichier.\n");
+            return;
+            }
+            
+            fscanf(fichier, "La taille:\n");
+            fscanf(fichier, "%d", &ligne);
+            fscanf(fichier, "%d", &cologne);
+    
+    
+            char TabA2[ligne][cologne];
+            int TabSYS[ligne][cologne];
+    
+            fscanf(fichier, "Grille du joueur :\n");
+            for (int i = 0; i < ligne; i++) {
+                for (int j = 0; j < cologne; j++) {
+                    fscanf(fichier, " %c", &TabA2[i][j]);
+                }
+            }
+            fscanf(fichier, "Grille avec les bombes :\n");
+            for (int i = 0; i < ligne; i++) {
+                for (int j = 0; j < cologne; j++) {
+                    fscanf(fichier, " %d", &TabSYS[i][j]);
+                }
+            }
+
+            fscanf(fichier, "Les Scores:\n");
+            fscanf(fichier, "\t#  	Case a ouvrir: %d           	Nombre de Bombe: %d     #\n", &nbTour1, &nbBombe1);
+            int nbTour1;
+            int nbBombe1;
+            fclose(fichier);
+
+    	    
+    	}
+	 
+ 	int TabS1[ligne1][colone1];	// grille inivisible
+ 	char TabA1[ligne1][colone1];   //grille visible par le joueur
+ 	//char STabA2[ligne1][colone1];
+ 	
+ 	createTab(ligne1, colone1, TabS1); 	//cree et initalise les tab
+ 	createTabC(ligne1, colone1, TabA1);
+ 	//createTabC(ligne1, colone1, STabA2);
+    
+     //int STabSYS[ligne1][colone1] = TabS1[ligne1][colone1];
+    
+    
+	genererBombe(ligne1, colone1, nbBombe1,TabS1);
+    
+	caseajda (ligne1,colone1,TabS1,TabA1,life1,nbTour1,nbBombe1,J1x,J1y);
+    
+ 	nbTour1=(ligne1*colone1)-nbBombe1;  //nb Tour pour gagné
+   
+   //test tabSYS
+
+	afficheGrille(ligne1, colone1, TabS1,life1,nbTour1,nbBombe1);
+	afficheInterface(life1,nbTour1,nbBombe1);
+	afficheGrilleC(ligne1, colone1, TabA1,life1,nbTour1,nbBombe1);
+    
+	saisieAlea (ligne1,colone1,TabS1,TabA1,life1,nbTour1,nbBombe1,J1x,J1y,choixJ2,choixJ3 );
+  
+	return 0;
+}
+
+void afficheInterface(int life1,int nbTour1,int nbBombe1){
+    
+	// rajouter les régle du jeu avant !!!
+ 	system("clear");
+printf("\n\n\t\t#################################################################\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#               	Jeu du demineur!                      	#\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#################################################################\n");
+printf("\t\t#################################################################\n");
+printf("\t\t#   Régle du jeu :                                        	#\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#   1) CONFIG:	i:  Initiale      	p:  Personaliser  	#\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#   2) SAISIE:	a: ALEATOIR       	m : Manuel        	#\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#   3) REVEAL:	d: DRAPEAU        	c : CASE          	#\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#   3) SYSTEME:   s: SAVE           	r : retourn en ariére   #\n");
+printf("\t\t#                                                         	#\n");
+printf("\t\t#################################################################\n");
+
+
+    
+}
+
+void saisienbTab(int ligne,int cologne){
+	printf("\nEntrez le nombre de lignes : ");
+	scanf("%d", &ligne);
+	printf("\nEntrez le nombre de colonnes :");
+	scanf("%d", &cologne);
+}
+
+void createTab(int ligne, int col, int TabA2[ligne][col]) {
+	int nbcase = -1;	// initialise le tableau a -1   
+	for (int i = 0; i < ligne; i++) {
+    	for (int j = 0; j < col; j++) {
+        	TabA2[i][j] = nbcase;   
+    	}
+	}
+	printf("\n");
+}
+
+void createTabC(int ligne, int col, char TabA2[ligne][col]){
+    
+	for (int i = 0; i < ligne; i++) {
+    	for (int j = 0; j < col; j++) {
+        	TabA2[i][j] = 'X'; // initialise a X
+    	}
+	}
+	printf("\n");
+}
+
+void afficheGrille(int ligne, int col, int TabA2[ligne][col],int life1,int nbTour1,int nbBombe1) {
+	printf("\n\t###############################################################\n");
+printf("\t#  	Nombre de Tour: %d           	Nombre de Bombe: %d    #\n",nbTour1,nbBombe1);
+printf("\t###############################################################\n");
+
+	int x =0;
+	int y=0;
+	printf("\n");
+	for (int i = 0; i < ligne; i++) {
+    	printf("|%d|\t\t",x);x++;   	//numero de ligne
+    	for (int j = 0; j < col; j++) {
+       	 
+        	printf("| %d |\t", TabA2[i][j]); // afiche la valeur
+    	}
+    
+    	printf("\n");
+	}
+}
+
+void afficheGrilleC(int ligne, int col, char TabA2[ligne][col],int life1,int nbTour1,int nbBombe1){
+printf("\t\t#################################################################\n");
+printf("\t\t#  	Case a ouvrir: %d           	Nombre de Bombe: %d     #\n",nbTour1,nbBombe1);
+printf("\t\t#################################################################\n");
+
+	int x =0;
+	int y=0;
+ 
+	printf("\n");
+    
+            	printf("\t");
+	for(int i=0;i<col;i++){  // numero de col HAUT
+            	printf(" |%d| \t",i);
+	}       	printf("\n");
+            	printf("\n");
+	for (int i = 0; i < ligne; i++){
+            	printf("|%d|\t",x);x++; // numero de ligne GAUCHE
+    	for (int j = 0; j < col; j++){
+       	 
+             	printf("| %c |\t", TabA2[i][j]); // aficher la valeur |X|
+    	}
+            	printf("|%d|\t\t",y);y++; // numero de ligne DROITE
+            	printf("\n");
+	}
+            	printf("\t\t");
+            	printf("\n");
+           	 
+            	printf("\t");
+        	for(int i=0;i<col;i++){  // numero de col BAS
+           	 
+            	printf(" |%d| \t",i);
+	}       	printf("\n");
+            	printf("\n");
+}
+
+void genererBombe(int ligne, int colonne, int nbBombe, int TabSYS[ligne][colonne]){
+    
+	srand(time(NULL)); //initialiser au temp actuel
+    
+    
+	for (int i = 0; i < nbBombe; i++) {
+    	int x = rand() % ligne; //  x aléa
+    	int y = rand() % colonne; //  y aléa
+    	if (TabSYS[x][y] == -1){ //si aucun bombe 
+        	TabSYS[x][y] = 0;
+    	}
+    	else {
+        	i--; //regener une bombe
+    	}
+	}
+}
+
+void saisiJ1(int ligne,int cologne,int TabSYS[ligne][cologne],char TabA2[ligne][cologne],int life1,int nbTour1,int nbBombe1,int x,int y){
+
+   
+	if (TabSYS[x][y] == 0){
+    	nbBombe1-1;
+    	life1-1;
+    	TabA2[x][y]='@'; // BOMBE
+    	// place la Bombe
+	}
+    
+	else if(TabSYS[x][y] == 1){
+    	TabA2[x][y]='1';  
+	}
+ 	else if(TabSYS[x][y] == 2){
+    	TabA2[x][y]='2';  
+	}
+ 	else if(TabSYS[x][y] == 3){
+    	TabA2[x][y]='3';  
+	}
+	else if(TabSYS[x][y] == 4){
+    	TabA2[x][y]='4';  
+	}
+	else if(TabSYS[x][y] == 5){
+    	TabA2[x][y]='5';  
+	}
+   	 
+ 	else if(TabSYS[x][y] == -1){
+     	TabA2[x][y]='O';  
+	}
+   	 
+           	 
+}
+
+void caseajda (int ligne,int cologne,int TabSYS[ligne][cologne],char TabA2[ligne][cologne],int life1,int nbTour1,int nbBombe1,int x,int y){
+    
+	for(int i =0;i<ligne;i++){
+                        	//+1 pour regles les pb de coin
+    	for(int j =0;j<cologne;j++){
+       	 
+        	if (i >= 0 && i <= ligne && j >= 0 && j <= cologne && TabSYS[i][j]!=0){
+            	int nbBombe=0;
+           	 
+           	 
+                	// debut casse adja en croix
+                	if(TabSYS[i-1][j]==0){
+                	nbBombe++;     	 
+                	}
+               	 
+                	if(TabSYS[i+1][j]==0){
+                	nbBombe++;
+                	}
+               	 
+                	if(TabSYS[i][j+1]==0){
+                	nbBombe++;
+                	}
+               	 
+                	if(TabSYS[i][j-1]==0){
+                	nbBombe++;
+                	}
+                	// fin case adja croix et debut coin case adja
+                	if(TabSYS[i-1][j+1]==0){
+                	nbBombe++;
+                	}
+               	 
+                	if(TabSYS[i+1][j-1]==0){
+                	nbBombe++;
+                	}
+               	 
+                	if(TabSYS[i+1][j+1]==0){
+                	nbBombe++;
+                	}
+            	 
+                	if(TabSYS[i-1][j-1]==0){
+                	nbBombe++;
+                	}
+                	// fin coin des case adja
+                    	if (nbBombe==0){
+                        	TabSYS[i][j]=-1;//si pas de bombe met -1 et             	0 au tab char
+                    	}
+                    	else TabSYS[i][j]=nbBombe;
+        	}
+    	}
+	}
+}
+
+void saisieAlea (int ligne,int cologne,int TabSYS[ligne][cologne],char TabA2[ligne][cologne],int life1,int nbTour1,int nbBombe1,int x,int y, char choixJ2,char choixJ3 ){
+    
+	do{
+    
+    	printf("2) Taper votre char : ");
+    	getchar();scanf("%c",&choixJ2);getchar();
+   	 
+        	if(choixJ2 != 'a' && choixJ2 != 'm'){
+        	printf("\n\n 2)Retapez votre char : ");
+        	scanf("%c",&choixJ2);getchar();
+       	 
+    	}
+       	 
+        	if(choixJ2=='a'){
+               	 
+            	x = rand() % ligne;
+            	y = rand() % cologne;
+           	 
+           	 if(TabA2[x][y]== 'X'){
+                	printf("3)Taper votre char ");
+                	scanf("%c",&choixJ3);
+               	 
+                    	if(choixJ3=='d'){
+                    	TabA2[x][y]='D';
+                    	(nbBombe1)--;
+                    	
+                   	 
+                    	}
+                    	else if (choixJ3=='c'){
+                    	saisiJ1(ligne,cologne, TabSYS, TabA2,life1,nbTour1,nbBombe1,x,y);
+                    	nbTour1--;
+                    	}
+                 	
+                 	afficheInterface(life1,nbTour1,nbBombe1);   
+            	    afficheGrilleC(ligne, cologne, TabA2,life1,nbTour1,nbBombe1);
+           	}
+           	            else{
+           	                x = rand() % ligne;
+            	            y = rand() % cologne;
+           	            }
+        	}
+       	 
+         	if (choixJ2=='m'){    
+            	printf("\nSaisisez le numéro de ligne : ");
+            	scanf("%d",&x);
+            	printf("\nSaisisez le numéro de colone : ");
+            	scanf("%d",&y);
+           	 
+            	getchar() ; printf("3)Taper votre char ");
+                	scanf("%c",&choixJ3);
+               	 
+                    	if(choixJ3=='d'){
+                    	TabA2[x][y]='D';
+                    	(nbBombe1)--;
+                    	
+                   	 
+                    	}
+                    	else if (choixJ3=='c'){
+                    	saisiJ1(ligne,cologne, TabSYS, TabA2,life1,nbTour1,nbBombe1,x,y);
+                    	nbTour1--;
+                    	}
+     	 
+                   	 
+                afficheInterface(life1,nbTour1,nbBombe1);	
+            	afficheGrilleC(ligne, cologne, TabA2,life1,nbTour1,nbBombe1);
+           	 
+        	}
+        	if (choixJ2=='s'){
+        	    
+        	    afficheInterface(life1,nbTour1,nbBombe1);	
+            	afficheGrilleC(ligne, cologne, TabA2,life1,nbTour1,nbBombe1);
+        	    
+        	    printf("Vous sauvegarder la partie au revoir ");
+        	    
+        	    FILE *fichier = fopen("partie_sauvegardee.txt", "w");
+                    if (fichier == NULL) {
+                        printf("Erreur lors de l'ouverture du fichier.\n");
+                    return;
+                    }
+                    
+                fprintf(fichier, "La taille");
+                fprintf(fichier, "%d\n", ligne);
+                fprintf(fichier, "%d\n", cologne);
+    
+                 // Sauvegarde de la grille Visible
+                 fprintf(fichier, "Grille du joueur :\n");
+                    for (int i = 0; i < ligne; i++) {
+                        for (int j = 0; j < cologne; j++) {
+                            fprintf(fichier, "%c ", TabA2[i][j]);
+                        }
+                            fprintf(fichier, "\n");
+                    }
+    
+                // Sauvegarde de la grille system
+                fprintf(fichier, "Grille avec les bombes :\n");
+                    for (int i = 0; i < ligne; i++) {
+                        for (int j = 0; j < cologne; j++) {
+                            fprintf(fichier, "%d ", TabSYS[i][j]);
+                        }
+                            fprintf(fichier, "\n");
+                    }
+                fprintf(fichier, "Les Scores:\n");
+                
+                fprintf(fichier,"\t#  	Case a ouvrir: %d           	Nombre de Bombe: %d     #\n",nbTour1,nbBombe1);
+             
+                fclose(fichier);
+                
+                printf("La partie a été sauvegardée avec succès.\n");
+                break;
+            }
+
+        	if (choixJ2=='r'){
+        	    
+        	    printf("Vous ete retourné en ariére");
+        	    afficheInterface(life1,nbTour1,nbBombe1);	
+            	afficheGrilleC(ligne, cologne, TabA2,life1,nbTour1,nbBombe1);
+        	    
+        	    
+        	}
+        	
+       	 
+	if(TabSYS[x][y]==0 && TabA2[x][y]!= 'D'){
+
+    	for(int i=0;i<ligne;i++){
+        	for(int j =0; j<cologne;j++){
+            	if(TabSYS[i][j]==0){
+                	TabA2[i][j]='@';
+            	}
+        	}
+    	}
+    	
+    	printf("\n\n\t_________________________GAME OVER ________________________");
+    	printf("\n\t_________________________GAME OVER ________________________");
+    	printf("\n\t_________________________GAME OVER ________________________\n\n");
+	 
+    	afficheGrilleC(ligne, cologne, TabA2,life1,nbTour1,nbBombe1);
+    	
+    	break;
+	}
+	if(nbTour1==0){
+   	 
+    	printf("\n\n\t_________________________WINNER ________________________");
+    	printf("\n\t_________________________WINNER ________________________");
+    	printf("\n\t_________________________WINNER ________________________\n\n");
+    	break;
+	}
+
+	}
+	while(nbTour1!=0);
+    
+}
